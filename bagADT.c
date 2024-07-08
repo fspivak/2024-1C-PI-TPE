@@ -3,6 +3,8 @@
 ** Fecha de Creacion: 05/07/2024
 ** Archivo para el manejo del back-end del Query 1
 ** Query 1: Total de multas por infraccion
+** Manejo de un bag de elementos genericos en forma de vector para luego
+** ordenarlo por cantidad de apariciones de cada elemento
 */
 
 #include <stdio.h>
@@ -11,7 +13,7 @@
 
 typedef struct element{
     elemType elem;
-    int count; // Cantidad de veces que aparece el mismo elemento
+    size_t count; // Cantidad de veces que aparece el mismo elemento
 } tElement;
 
 struct bagCDT{
@@ -60,9 +62,17 @@ void addBag(bagADT bag, elemType elem){
     return;
 }
 
-// Funcino Auxiliar para ordenar de manera descendente el bag 
+/* Funcino Auxiliar para ordenar de manera descendente el bag */
 static int cmpCount(const tElement * e1, const tElement * e2){
-    return (e1->count == e2->count) ? compare(e1->elem, e2->elem) : e2->count - e1->count;   
+    if(e1->count < e2->count){
+        return 1;
+    }
+    else if(e1->count > e2->count){
+        return -1;
+    }
+    else{ //e1->count == e2->count
+        return compare(e1->elem, e2->elem);
+    }
 }
 
 void sortBag(bagADT bag){

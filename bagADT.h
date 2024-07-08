@@ -3,16 +3,15 @@
 ** Fecha de Creacion: 05/07/2024
 ** Header para el manejo del front-end del Query 1
 ** Query 1: Total de multas por infraccion
-** Este ranking no guarda en el heap el elemType sino que hace un puntero al lugar de donde le pasaron el elemType
-** Como el manejo es interno yo voy a mantener en un vector de elemType general con los datos y lo que hago es apuntar a ellos
-** Esto me hace el manejo de datos mas liviano porque estoy haciendo swap de un struct que contiene un puntero y un size_t
+** Manejo de un bag de elementos genericos en forma de vector para luego
+** ordenarlo por cantidad de apariciones de cada elemento
 */
 
 #ifndef bagADT_h
 #define bagADT_h
 
 #include <stdlib.h>
-#include "funGen.h"
+#include <strings.h>
 
 typedef struct bagCDT * bagADT;
 
@@ -26,7 +25,7 @@ typedef const char * elemType;   // cambiar al tipo deseado para que sea mas ada
 */
 #pragma GCC diagnostic ignored "-Wunused-function"
 static int compare(elemType e1, elemType e2) {
-	return my_strcasecmp(e1, e2);
+	return strcasecmp(e1, e2);
 }
 #pragma GCC diagnostic warning "-Wunused-function"
 
@@ -49,8 +48,7 @@ void addBag(bagADT bag, elemType elem);
 */
 void sortBag(bagADT bag);
 
-/* 
-** Retorna el elemento del indice idx.
+/* Retorna el elemento del indice idx.
 ** Dejando en count la cantidad de veces repetido,
 ** siendo 0 en caso de no pertenecer al bag
 */
