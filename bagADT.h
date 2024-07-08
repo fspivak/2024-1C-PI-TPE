@@ -28,6 +28,10 @@ static int compare(elemType e1, elemType e2) {
 	return strcasecmp(e1, e2);
 }
 #pragma GCC diagnostic warning "-Wunused-function"
+/* Con esto evito que salga un warning porque no uso la funcion compare en el main. 
+** Me parece de mejor estilo que la funcion de comparacion este en el .h y de esa manera solo modifico 
+** elemType y su funcion de comparacion para que sea un TAD que maneje cualquier tipo de dato
+*/
 
 /* Retorna un nuevo bag de elementos genéricos. Al inicio está vacío */
 bagADT newBag(void);
