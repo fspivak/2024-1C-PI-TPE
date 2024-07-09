@@ -1,10 +1,21 @@
 a.out
-
-Dataset Alumnos/
-settings.json
 prueba
+settings.json
+Dataset Alumnos/
 infractions_Test.csv
 bagADT_Test.c
+bookADT_Test.c
+infractions.c
+infractions.h
 rankingADT.c
 rankingADT.h
 rankingADT_Test.c
+funGen.h
+funGen.c
+query1.csv
+query2.csv
+query3.csv
+TPE_front.c
+TPE_front.h
+main.c
+main2.c
