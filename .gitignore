@@ -19,3 +19,5 @@ TPE_front.c
 TPE_front.h
 main.c
 main2.c
+ticketsCHI_Test.csv
+ticketsNYC_Test.csv
