@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include "bagADT.h"
+#include "infractionsADT.h"
 
 typedef struct element{
     elemType elem;
@@ -21,11 +22,12 @@ struct bagCDT{
     size_t size; // Cantidad de elementos insertados (sin repetir)
 };
 
-bagADT newBag(void){
+bagADT newBag(status * flag){
     errno = 0;
     bagADT new = calloc(1, sizeof(struct bagCDT));
     if(new == NULL || errno == ENOMEM){
-        return NULL; // ante un error retorna NULL, sin hacer cambios -> checkeo en main si errno es distinto de cero y voy al front para explicar porque se detuvo la ejecucion
+        *flag = NO_MEMORY;
+        return NULL; // ante un error retorna NULL, sin hacer cambios
     }
     return new;
 }
@@ -43,23 +45,23 @@ int findBag(const bagADT bag, elemType elem){
     return -1;
 }
 
-void addBag(bagADT bag, elemType elem){
+status addBag(bagADT bag, elemType elem){
     int idx = findBag(bag, elem);
     if(idx >= 0){
         bag->v[idx].count++;
-        return;
+        return OK;
     }
     // si idx es < 0 es porque no existe en el bag
     errno = 0;
     tElement * aux = realloc(bag->v, (bag->size + 1) * sizeof(tElement));
     if (aux == NULL || errno == ENOMEM){
-        return; // ante un error retorna el mismo vector, sin hacer cambios -> checkeo en main si errno es distinto de cero y voy al front para explicar porque se detuvo la ejecucion
+        return NO_MEMORY; // ante un error retorna, sin hacer cambios
     }
     bag->v = aux;
     bag->v[bag->size].elem = elem;
     bag->v[bag->size].count = 1;
     bag->size++;
-    return;
+    return OK;
 }
 
 /* Funcino Auxiliar para ordenar de manera descendente el bag */
@@ -80,9 +82,12 @@ void sortBag(bagADT bag){
     return;
 }
 
-elemType getBag(bagADT bag, size_t idx, int * count){
-    *count = bag->v[idx].count; 
-    return bag->v[idx].elem;
+tQueryBag1 getElemBag(bagADT bag, size_t idx){
+    tQueryBag1 ans = {
+        .elem = bag->v[idx].elem,
+        .count = bag->v[idx].count
+    };
+    return ans;
 }
 
 void freeBag(bagADT bag){

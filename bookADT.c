@@ -3,7 +3,6 @@
 ** Fecha de Creacion: 05/07/2024
 ** Archivo para el manejo del back-end del Query 2 y 3
 ** Query 2: Infracción más popular por agencia emisora
-** Query 3: Patente con más multas por infracción 
 */
 
 #include <stdio.h>
@@ -11,11 +10,11 @@
 #include <errno.h>
 #include <string.h>
 #include "bookADT.h"
+#include "infractionsADT.h"
 
 // Nodo de Categoria
 struct nodeC{
     elemType elem;
-    int elemFormat; // Formato de almacenamiento del elem
     size_t count; // Cantidad de veces que se repitio esa Categoria
     struct nodeC * tailC;
 };
@@ -25,7 +24,6 @@ typedef struct nodeC * tNodeC;
 // Nodo de Grupo
 struct nodeG{
     elemType elem; 
-    int elemFormat; // Formato de almacenamiento del elem
     struct nodeG * nextG; // Next Grupo
     tNodeC firstC; // First Categoria
 };
@@ -36,48 +34,47 @@ struct bookCDT{
     tNodeG firstG; // First Grupo
     tNodeG iterG; // Iter Grupo
     size_t size; // Cantidad total de grupos
-    compare cmp; // Funcion de comparacion
 };
 
-bookADT newBook(compare cmp){
+bookADT newBook(status * flag){
     errno = 0;
     bookADT new = calloc(1, sizeof(struct bookCDT)); //firstG=NULL, iterG=NULL, iterC==NULL, size=0
     if(new == NULL || errno == ENOMEM){
+        *flag = NO_MEMORY;
         return NULL; // ante un error retorna NULL, sin hacer cambios -> checkeo en main si errno es distinto de cero y voy al front para explicar porque se detuvo la ejecucion
     }
-    new->cmp = cmp;
     return new;
 }
 
 static char * copyStr(elemType elem){
     elemType ans = malloc((strlen(elem)+1) * sizeof(elem[0]));
     if (ans == NULL || errno == ENOMEM){
-        return NULL; // ante un error retorna NULL, sin hacer cambios -> checkeo en main si errno es distinto de cero y voy al front para explicar porque se detuvo la ejecucion
+        return NULL; // ante un error retorna NULL, sin hacer cambios
     }
     return strcpy(ans, elem);
 }
 
-static tNodeC addContact(tNodeC l, elemType cat, int catFormat, compare cmp){
+static tNodeC addCategory(tNodeC l, elemType cat, status * flag){
     int c;
     
     // l==NULL o l->elem > cat -> la categoria no existe -> lo creo
-    if(l == NULL || (c=cmp(l->elem, cat)) > 0){
+    if(l == NULL || (c=compare(l->elem, cat)) > 0){
         // Valido espacio en memoria
         errno = 0;
         tNodeC new = malloc(sizeof(struct nodeC));
         if(new == NULL || errno == ENOMEM){
+            *flag = NO_MEMORY;
             return l; // ante un error retorna el nodo de categoria, sin hacer cambios -> checkeo en main si errno es distinto de cero y voy al front para explicar porque se detuvo la ejecucion
         }
         // Forma de almacenar elem
-        new->elem = (catFormat == 0) ? cat : copyStr(cat);
-        new->elemFormat = catFormat;
+        new->elem = cat;
         new->count = 1;
         new->tailC = l;
         return new;
     }
     // l->elem < cat -> puede estar mas adelante
     else if(c < 0){
-        l->tailC = addContact(l->tailC, cat, catFormat, cmp);
+        l->tailC = addCategory(l->tailC, cat, flag);
     }
     else{// l->elem == cat -> ya existe la categoria
         l->count++;
@@ -86,41 +83,43 @@ static tNodeC addContact(tNodeC l, elemType cat, int catFormat, compare cmp){
     return l; // este return sirve para c==0 y c<0
 }
 
-static tNodeG addGroup(tNodeG g, elemType group, int grupFormat, elemType cat, int catFormat, compare cmp, int * flag){
+static tNodeG addGroup(tNodeG g, elemType group, elemType cat, int * add, status * flag){
     int c;
 
     // g==NULL o g->elem > group -> el grupo no existe -> lo creo
-    if(g == NULL || (c=cmp(g->elem, group)) > 0){
+    if(g == NULL || (c=compare(g->elem, group)) > 0){
         // Valido espacio en memoria
         errno = 0;
         tNodeG new = malloc(sizeof(struct nodeG));
         if(new == NULL || errno == ENOMEM){
+            *flag = NO_MEMORY;
             return g; // ante un error retorna el nodo de grupo, sin hacer cambios -> checkeo en main si errno es distinto de cero y voy al front para explicar porque se detuvo la ejecucion
         }
         // Forma de almacenar elem
-        new->elem = (grupFormat == 0) ? group : copyStr(group);
-        new->elemFormat = grupFormat;
+        new->elem = copyStr(group);
         new->nextG = g;
-        *flag = 1;
+        *add = 1;
         new->firstC = NULL;
-        new->firstC = addContact(new->firstC, cat, catFormat, cmp);
+        new->firstC = addCategory(new->firstC, cat, flag);
         return new;
     }
     // g->elem < group -> puede estar mas adelante
     else if(c < 0){
-        g->nextG = addGroup(g->nextG, group, grupFormat, cat, catFormat, cmp, flag);
+        g->nextG = addGroup(g->nextG, group, cat, add, flag);
     }
     else{// g->name == group -> ya existe el grupo
-        g->firstC = addContact(g->firstC, cat, catFormat, cmp);
+        g->firstC = addCategory(g->firstC, cat, flag);
     }
     
     return g; // este return sirve para c==0 y c<0
 }
 
-void addBook(bookADT b, elemType group, int grupFormat, elemType cat, int catFormat){
-    int flag = 0;
-    b->firstG = addGroup(b->firstG, group, grupFormat, cat, catFormat, b->cmp, &flag);
-    b->size += flag; // Aumento si es que agrego un nuevo grupo
+status addBook(bookADT b, elemType group, elemType cat){
+    int add = 0;
+    status flag = OK;
+    b->firstG = addGroup(b->firstG, group, cat, &add, &flag);
+    b->size += add; // Aumento si es que agrego un nuevo grupo
+    return flag;
 }
 
 void toBeginMostPopular(bookADT b){
@@ -131,8 +130,8 @@ int hasNextMostPopular(bookADT b){
     return b->iterG != NULL;
 }
 
-tQueryBook nextMostPopular(bookADT b){
-    tQueryBook ans;
+tQueryBook2 nextMostPopular(bookADT b){
+    tQueryBook2 ans;
     ans.group = b->iterG->elem;
 
     tNodeC aux = b->iterG->firstC; // nodo auxiliar de categoria
@@ -142,7 +141,7 @@ tQueryBook nextMostPopular(bookADT b){
 
     while (aux != NULL){
         // en el caso de empate de count, me quedo con el de menor orden alfabético
-        if(aux->count > ans.count || (aux->count==ans.count && (b->cmp(aux->elem, ans.cat)<0))){
+        if(aux->count > ans.count || (aux->count==ans.count && (compare(aux->elem, ans.cat)<0))){
             ans.cat = aux->elem;
             ans.count = aux->count;
         }
@@ -158,9 +157,6 @@ static void freeBookCat(tNodeC c){
         return;
     }
     freeBookCat(c->tailC);
-    if(c->elemFormat){ // elemFormat es 1 -> libero el espacio almacenado
-        free(c->elem);
-    }
     free(c);
     return;
 }
@@ -171,9 +167,7 @@ static void freeBookGroup(tNodeG g){
     }
     freeBookGroup(g->nextG);
     freeBookCat(g->firstC);
-    if(g->elemFormat){ // elemFormat es 1 -> libero el espacio almacenado
-        free(g->elem);
-    }
+    free(g->elem);
     free(g);
     return;
 
