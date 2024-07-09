@@ -1,7 +1,7 @@
 /*
 ** Autor: Federico Spivak
 ** Fecha de Creacion: 05/07/2024
-** Header para el manejo del front-end del Query 3
+** Archivo para el manejo del front-end del Query 3
 ** Query 3: Patente con más multas por infracción
 */
 

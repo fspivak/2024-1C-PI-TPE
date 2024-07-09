@@ -1,7 +1,7 @@
 /*
 ** Autor: Federico Spivak
 ** Fecha de Creacion: 05/07/2024
-** Archivo para el manejo del back-end del Query 2 y 3
+** Archivo para el manejo del back-end del Query 2
 ** Query 2: Infracción más popular por agencia emisora
 */
 
