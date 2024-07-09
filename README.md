@@ -49,7 +49,7 @@ make chi
 
 Para generar los Query de Chicago deseados (del 1 al 3 por ser un único integrado), asegúrate de que los archivos ticketsCHI.csv e infractionsCHI.csv estén en el mismo    directorio que el ejecutable:
 ```sh = 
-make querynyc
+make querychi
 ```
 
 

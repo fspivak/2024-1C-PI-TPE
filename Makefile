@@ -4,28 +4,27 @@
 
 # FORMA PARAMETRIZADA
 COMPILER=gcc
-OUTPUT_FILE=prueba
-FILES_BAGADT=bagADT_Test.c bagADT.c
-FILES_BOOKADT=bookADT_Test.c bookADT.c
+
+OUTPUT_FILE_NYC=parkingTicketsNYC
+OUTPUT_FILE_CHI=parkingTicketsCHI
+
 FILES_NYC=mainNYC.c infractionsADT.c tickets.c bagADT.c bookADT.c dictADT.c
 FILES_CHI=mainCHI.c infractionsADT.c tickets.c bagADT.c bookADT.c dictADT.c
 
-bag:
-	$(COMPILER) -o $(OUTPUT_FILE) $(FILES_BAGADT) -Wall -pedantic -std=c99 -lm -g -fsanitize=address
-book:
-	$(COMPILER) -o $(OUTPUT_FILE) $(FILES_BOOKADT) -Wall -pedantic -std=c99 -lm -g -fsanitize=address
+FLAGS=-Wall -pedantic -std=c99 -lm -g -fsanitize=address
+
 
 nyc:
-	$(COMPILER) -o $(OUTPUT_FILE) $(FILES_NYC) -Wall -pedantic -std=c99 -lm -g -fsanitize=address
+	$(COMPILER) -o $(OUTPUT_FILE_NYC) $(FILES_NYC) $(FLAGS)
 
 chi:
-	$(COMPILER) -o $(OUTPUT_FILE) $(FILES_CHI) -Wall -pedantic -std=c99 -lm -g -fsanitize=address
+	$(COMPILER) -o $(OUTPUT_FILE_CHI) $(FILES_CHI) $(FLAGS)
 
 querynyc:
-	./$(OUTPUT_FILE) ticketsNYC_Test.csv Dataset\ Alumnos/infractionsNYC.csv 
+	./$(OUTPUT_FILE_NYC) ticketsNYC.csv infractionsNYC.csv 
 
 querychi:
-	./$(OUTPUT_FILE) ticketsCHI_Test.csv Dataset\ Alumnos/infractionsNYC.csv 
+	./$(OUTPUT_FILE_CHI) ticketsCHI.csv infractionsCHI.csv 
 
 clean:
 	rm $(OUTPUT_FILE)
